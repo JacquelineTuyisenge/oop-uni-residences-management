@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>University Residence Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #4a90e2;
+        }
+
+        form, .output, .maintenance-form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: auto;
+            margin-top: 20px;
+        }
+
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #4a90e2;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #357ab8;
+        }
+
+        .maintenance-form {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>University Residence Management System</h1>
+    <form id="assignmentForm">
+        <label for="studentName">Student Name:</label>
+        <input type="text" id="studentName" required>
+        
+        <label for="studentID">Student ID:</label>
+        <input type="text" id="studentID" required>
+        
+        <label for="gender">Gender:</label>
+        <input type="text" id="gender" required>
+        
+        <label for="residenceType">Residence Type:</label>
+        <select id="residenceType" required>
+            <option value="dorm">Dorm Room</option>
+            <option value="apartment">Apartment</option>
+        </select>
+        
+        <label for="residenceName">Residence Name:</label>
+        <input type="text" id="residenceName" required>
+        
+        <label for="address">Address:</label>
+        <input type="text" id="address" required>
+        
+        <label for="sizeBedrooms">Size (sq ft) / Bedrooms:</label>
+        <input type="number" id="sizeBedrooms" required>
+        
+        <button type="submit">Assign Residence</button>
+    </form>
+
+    <div class="output" id="output"></div>
+    
+    <form id="maintenanceForm" class="maintenance-form">
+        <label for="description">Maintenance Request Description:</label>
+        <textarea id="description" required></textarea>
+        
+        <button type="submit">Submit Request</button>
+    </form>
+    
+    <script src="management.js"></script>
+    <script>
+        let currentStudent = null;
+
+        document.getElementById('assignmentForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const studentName = document.getElementById('studentName').value;
+            const studentID = document.getElementById('studentID').value;
+            const gender = document.getElementById('gender').value;
+            const residenceType = document.getElementById('residenceType').value;
+            const residenceName = document.getElementById('residenceName').value;
+            const address = document.getElementById('address').value;
+            const sizeBedrooms = document.getElementById('sizeBedrooms').value;
+            
+            let residence;
+
+            if (residenceType === 'dorm') {
+                residence = new DormRoom(residenceName, address, sizeBedrooms);
+            } else {
+                residence = new Apartment(residenceName, address, sizeBedrooms);
+            }
+
+            currentStudent = new Student(studentName, studentID, gender);
+            currentStudent.assignResidence(residence);
+
+            displayStudentInfo();
+        });
+
+        function displayStudentInfo() {
+            if (!currentStudent) return;
+
+            const output = document.getElementById('output');
+            output.innerHTML = `
+                <h2>Assigned Residence</h2>
+                <p><strong>Student:</strong> ${currentStudent.name} (${currentStudent.studentID})</p>
+                <p><strong>Gender:</strong> ${currentStudent.gender}</p>
+                <p><strong>Residence Type:</strong> ${currentStudent.residence instanceof DormRoom ? 'Dorm Room' : 'Apartment'}</p>
+                <p><strong>Residence Name:</strong> ${currentStudent.residence.name}</p>
+                <p><strong>Address:</strong> ${currentStudent.residence.address}</p>
+                <p><strong>${currentStudent.residence instanceof DormRoom ? 'Size (sq ft)' : 'Bedrooms'}:</strong> ${currentStudent.residence instanceof DormRoom ? currentStudent.residence.size : currentStudent.residence.bedrooms}</p>
+                <p><strong>Rent:</strong> $${currentStudent.residence.rent.toFixed(2)}</p>
+                <p><strong>Occupied:</strong> ${currentStudent.residence.occupied ? 'Yes' : 'No'}</p>
+                <button onclick="showMaintenanceForm()">Submit Maintenance Request</button>
+            `;
+
+            document.getElementById('maintenanceForm').style.display = 'none';
+        }
+
+        function showMaintenanceForm() {
+            document.getElementById('maintenanceForm').style.display = 'block';
+        }
+
+        document.getElementById('maintenanceForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            if (!currentStudent) return;
+
+            const description = document.getElementById('description').value;
+            const maintenanceRequest = new MaintenanceRequest(description, currentStudent);
+
+            alert(`Maintenance Request Submitted:\n\nDescription: ${maintenanceRequest.description}\nStatus: ${maintenanceRequest.status}\nStudent: ${maintenanceRequest.student.name}`);
+        });
+    </script>
+</body>
+</html>
